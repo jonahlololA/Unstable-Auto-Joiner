@@ -58,9 +58,6 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 public class ClickBotClient implements ClientModInitializer {
     private static final String WATCHER_URL = "http://127.0.0.1:3100/latest";
     private static final double REACH = 2.8;
-    private static final float CHASE_TURN_SMOOTHING = 0.045f;
-    private static final float CHASE_MAX_YAW_STEP = 1.15f;
-    private static final float CHASE_MAX_PITCH_STEP = 0.75f;
     private static final long GIVE_UP_MS = 15000;
     private static final int AFK_INTERVAL_TICKS = 600;
     private static final int AFK_STEP_TICKS = 3;
@@ -125,7 +122,6 @@ public class ClickBotClient implements ClientModInitializer {
     private static Entity chase = null;
     private static String chaseName = "";
     private static long chaseStart = 0;
-    private static int chaseTicks = 0;
     private static String lastDiag = "";
     private static final StringBuilder lastExplain = new StringBuilder();
     private static Entity chaseLabel = null;
@@ -943,7 +939,6 @@ public class ClickBotClient implements ClientModInitializer {
         chaseLabel = foundLabel;
         chaseName = wanted;
         chaseStart = System.currentTimeMillis();
-        chaseTicks = 0;
         String labelText = foundLabel != null ? labelName(foundLabel) : "?";
         double offset = foundLabel != null ? horizontal(found, foundLabel) : 0;
         say(mc, "Running to \"" + wanted + "\": label \"" + labelText + "\" -> " + typeId(found)
@@ -983,10 +978,8 @@ public class ClickBotClient implements ClientModInitializer {
 
         Vec3d eye = p.getEyePos();
         Box box = chase.getBoundingBox();
-        Vec3d aim = new Vec3d(chase.getX(), chase.getY() + chase.getHeight() * 0.82, chase.getZ());
-        float yawError = lookAt(p, eye, aim);
-        double horizontalDistance = Math.sqrt(p.squaredDistanceTo(chase.getX(), p.getY(), chase.getZ()));
-        chaseTicks++;
+        Vec3d aim = new Vec3d(chase.getX(), chase.getY() + chase.getHeight() * 0.85, chase.getZ());
+        lookAt(p, eye, aim);
 
         Vec3d closest = new Vec3d(
             MathHelper.clamp(eye.x, box.minX, box.maxX),
@@ -1008,17 +1001,8 @@ public class ClickBotClient implements ClientModInitializer {
         }
 
         mc.options.forwardKey.setPressed(true);
-        mc.options.backKey.setPressed(false);
-        boolean driftLeft = chaseTicks % 96 >= 8 && chaseTicks % 96 < 11;
-        boolean driftRight = chaseTicks % 96 >= 56 && chaseTicks % 96 < 59;
-        mc.options.leftKey.setPressed(driftLeft);
-        mc.options.rightKey.setPressed(driftRight);
         mc.options.sprintKey.setPressed(true);
-
-        boolean obstacle = p.horizontalCollision && p.isOnGround();
-        boolean occasionalHop = sprintJump && p.isOnGround() && horizontalDistance > 9.0
-            && chaseTicks % 70 == 0;
-        mc.options.jumpKey.setPressed(obstacle || occasionalHop);
+        mc.options.jumpKey.setPressed(sprintJump || (p.horizontalCollision && p.isOnGround()));
     }
 
     private static void stopChase(MinecraftClient mc) {
@@ -1106,30 +1090,13 @@ public class ClickBotClient implements ClientModInitializer {
         mc.options.jumpKey.setPressed(false);
     }
 
-    private static float lookAt(ClientPlayerEntity p, Vec3d from, Vec3d to) {
+    private static void lookAt(ClientPlayerEntity p, Vec3d from, Vec3d to) {
         double dx = to.x - from.x;
         double dy = to.y - from.y;
         double dz = to.z - from.z;
         double horizontal = Math.sqrt(dx * dx + dz * dz);
-
-        float bearing = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
-        float gentleDrift = (float) (Math.sin(chaseTicks * 0.018) * 5.5
-            + Math.sin(chaseTicks * 0.043) * 1.8);
-        float desiredYaw = bearing + gentleDrift;
-
-        float targetPitch = (float) (-Math.toDegrees(Math.atan2(dy, horizontal)));
-        float desiredPitch = MathHelper.clamp(targetPitch, -10.0f, 10.0f);
-
-        float yawError = MathHelper.wrapDegrees(desiredYaw - p.getYaw());
-        float yawStep = MathHelper.clamp(yawError * CHASE_TURN_SMOOTHING,
-            -CHASE_MAX_YAW_STEP, CHASE_MAX_YAW_STEP);
-        float pitchError = desiredPitch - p.getPitch();
-        float pitchStep = MathHelper.clamp(pitchError * 0.045f,
-            -CHASE_MAX_PITCH_STEP, CHASE_MAX_PITCH_STEP);
-
-        p.setYaw(p.getYaw() + yawStep);
-        p.setPitch(MathHelper.clamp(p.getPitch() + pitchStep, -90.0f, 90.0f));
-        return yawError;
+        p.setYaw((float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0));
+        p.setPitch((float) (-Math.toDegrees(Math.atan2(dy, horizontal))));
     }
 
     private static String fmt(double d) {

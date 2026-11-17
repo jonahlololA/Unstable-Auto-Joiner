@@ -13,8 +13,11 @@ Fabric API for 1.21.11
 
 The ClickBot jar from the Releases page
 
+OPSec mod (not required but highly recommended)
+get it here: https://github.com/aurickk/OpSec/releases
 
-## How to make the discord watcher: (You need your own message fowarder)
+
+## How to make the discord watcher: (You need your own message forwarder)
 
 Go to the Discord Developer Portal -> New Application.
 Open the Bot tab -> Reset Token -> copy the token (you only see it once).
@@ -30,11 +33,13 @@ The status line should say Discord: built-in.
 Your settings are saved. The token is stored as plain text in the instance's config/clickbot.properties, so never share that file or export your instance with it inside.
 
 ## Using it
-Stand near the models. The game only loads models close to you.
-Press F8. Chat says MASTER ON and then Discord reader connected.
-While it waits, your character strafes left and right near one spot.
-When a message with a model name and a letter appears, your character sprint-jumps to that model and clicks it. Then the master switch turns itself off. Press F8 to start the next round.
+Stand near the models
 
+Press F8. Chat says MASTER ON and then Discord reader connected.
+
+While it waits, your character strafes left and right near one spot, if turned on
+
+When a message with a model name and a letter appears, your character sprint-jumps to that model and clicks it. Then the master switch turns itself off. Press F8 to start the bot again
 
 ## Keys and commands
 
@@ -56,8 +61,6 @@ F9 or /clickbot menu	Open the menu
 
 /clickbot test wemmbu e	Try a target without Discord (master switch must be on)
 
-/clickbot explain wemmbu e	Show which model it would pick for a target, and why (no click)
-
 /clickbot list	Save nearby entities to clickbot-list.txt for troubleshooting
 
 /clickbot setchannel <id>	Change the Discord channel
@@ -73,13 +76,15 @@ If a key does nothing (some laptops need Fn + F9), type /clickbot menu, then use
 You only need this if you want to build the jar yourself. You need Java 25 (for example Temurin 25).
 
 git clone https://github.com/YOUR-USERNAME/clickbot.git
+
 cd clickbot
+
 ./gradlew build          # Windows PowerShell: .\gradlew build
 
 The jar is in build/libs/. Use the one without sources or dev in its name.
 
 ## Troubleshooting
-No /clickbot commands	The mod did not load. Check that Fabric API and ClickBot are both enabled in the Mods tab
+No /clickbot commands:	The mod did not load. Check that Fabric API and ClickBot are both enabled in the Mods tab
 
 "Discord rejected the bot token"	Paste the token again in the menu
 
@@ -90,6 +95,3 @@ No /clickbot commands	The mod did not load. Check that Fabric API and ClickBot a
 Connected, but messages are ignored	Turn on Message Content Intent in the Developer Portal
 
 "Can't click ..."	The model is not loaded near you. Walk closer and try /clickbot list
-
-"Not clicking, to avoid hitting the wrong one"	Two models are too close to tell apart. Run /clickbot explain <target> and open an issue with the output
-"Your hunger is low"	Minecraft does not allow sprinting at hunger 6 or less. Eat something

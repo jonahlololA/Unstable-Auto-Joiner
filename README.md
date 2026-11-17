@@ -71,18 +71,6 @@ F9 or /clickbot menu	Open the menu
 
 If a key does nothing (some laptops need Fn + F9), type /clickbot menu, then use the Menu key button in the menu to pick a different key.
 
-## Build from source
-
-You only need this if you want to build the jar yourself. You need Java 25 (for example Temurin 25).
-
-git clone https://github.com/YOUR-USERNAME/clickbot.git
-
-cd clickbot
-
-./gradlew build          # Windows PowerShell: .\gradlew build
-
-The jar is in build/libs/. Use the one without sources or dev in its name.
-
 ## Troubleshooting
 No /clickbot commands:	The mod did not load. Check that Fabric API and ClickBot are both enabled in the Mods tab
 
